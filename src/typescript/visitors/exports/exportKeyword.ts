@@ -42,6 +42,17 @@ export default visit(
                 }
               })
             );
+          } else if (declaration.initializer && ts.isCallExpression(declaration.initializer) && (declaration as any).initializer?.expression?.expression?.getText() === 'StyleSheet') {
+            const identifier = declaration.name.getText();
+            const pos = declaration.name.getStart();
+            const properties = (declaration as any).initializer?. arguments[0]?.properties || [];
+            const members = properties.map((member: any) => ({
+              node: member,
+              identifier: member.name.getText(),
+              type: SymbolType.MEMBER,
+              pos: member.name.getStart(),
+            }))
+            return {node: declaration, identifier, type: SymbolType.STYLESHEET, pos, members};
           } else {
             // Pattern: export const MyVar = 1;
             const identifier = declaration.name.getText();

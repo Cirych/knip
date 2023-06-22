@@ -22,6 +22,7 @@ type Row = {
   duplicates?: string[][];
   enumMembers?: Record<string, string[]>;
   classMembers?: Record<string, string[]>;
+  styleMembers?: Record<string, string[]>;
 };
 
 const mergeTypes = (type: SymbolIssueType) =>
@@ -55,6 +56,7 @@ export default async ({ report, issues, options }: ReporterOptions) => {
       ...((report.types || report.nsTypes) && { types: [] }),
       ...(report.enumMembers && { enumMembers: {} }),
       ...(report.classMembers && { classMembers: {} }),
+      ...(report.styleMembers && { styleMembers: {} }),
       ...(report.duplicates && { duplicates: [] }),
     };
     return row;
@@ -74,7 +76,7 @@ export default async ({ report, issues, options }: ReporterOptions) => {
           json[filePath] = json[filePath] ?? initRow(filePath);
           if (type === 'duplicates') {
             symbols && json[filePath][type]?.push(symbols);
-          } else if (type === 'enumMembers' || type === 'classMembers') {
+          } else if (type === 'enumMembers' || type === 'classMembers' || type === 'styleMembers') {
             const item = json[filePath][type];
             if (parentSymbol && item) {
               item[parentSymbol] = item[parentSymbol] ?? [];
