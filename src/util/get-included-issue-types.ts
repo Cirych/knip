@@ -24,7 +24,7 @@ export const getIncludedIssueTypes = (
     cliArgs.include = [...cliArgs.include, 'dependencies', 'unlisted', 'binaries', 'unresolved'];
   }
   if (cliArgs.exports) {
-    const exports = ['exports', 'nsExports', 'classMembers', 'types', 'nsTypes', 'enumMembers', 'duplicates'];
+    const exports = ['exports', 'nsExports', 'classMembers', 'types', 'nsTypes', 'enumMembers', 'duplicates', 'styleMembers'];
     cliArgs.include = [...cliArgs.include, ...exports];
   }
 

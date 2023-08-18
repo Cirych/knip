@@ -6,6 +6,7 @@ export enum SymbolType {
   CLASS = 'class',
   MEMBER = 'member',
   UNKNOWN = 'unknown',
+  STYLESHEET = 'stylesheet',
 }
 
 export type Issue = {
@@ -36,6 +37,7 @@ export type Issues = {
   duplicates: IssueRecords;
   enumMembers: IssueRecords;
   classMembers: IssueRecords;
+  styleMembers: IssueRecords;
 };
 
 export type IssueType = keyof Issues;
