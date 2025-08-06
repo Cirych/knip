@@ -191,6 +191,7 @@ export const ISSUE_TYPES: IssueType[] = [
   'nsTypes',
   'enumMembers',
   'classMembers',
+  'styleMembers',
   'duplicates',
 ];
 
@@ -209,6 +210,7 @@ export const ISSUE_TYPE_TITLE: Record<IssueType, string> = {
   nsTypes: 'Exported types in used namespace',
   enumMembers: 'Unused exported enum members',
   classMembers: 'Unused exported class members',
+  styleMembers: 'Unused exported StyleSheet members',
   duplicates: 'Duplicate exports',
 };
 

@@ -25,6 +25,7 @@ const issueTypeSchema = z.union([
   z.literal('duplicates'),
   z.literal('enumMembers'),
   z.literal('classMembers'),
+  z.literal('styleMembers')
 ]);
 
 const rulesSchema = z.record(issueTypeSchema, z.enum(['error', 'warn', 'off']));

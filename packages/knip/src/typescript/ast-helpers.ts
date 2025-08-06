@@ -1,6 +1,6 @@
 import ts from 'typescript';
 import { FIX_FLAGS } from '../constants.js';
-import type { Fix } from '../types/exports.js';
+import type { Fix, ExportNodeMember } from '../types/exports.js';
 import { SymbolType } from '../types/issues.js';
 
 function isGetOrSetAccessorDeclaration(node: ts.Node): node is ts.AccessorDeclaration {
@@ -59,6 +59,7 @@ export const getNodeType = (node: ts.Node): SymbolType => {
   if (ts.isTypeAliasDeclaration(node)) return SymbolType.TYPE;
   if (ts.isEnumDeclaration(node)) return SymbolType.ENUM;
   if (ts.isVariableDeclaration(node)) return SymbolType.VARIABLE;
+  if (ts.isVariableDeclaration(node)) return SymbolType.STYLE;
   return SymbolType.UNKNOWN;
 };
 
@@ -86,6 +87,67 @@ export const getEnumMember = (member: ts.EnumMember, isFixTypes: boolean) => ({
     ? ([member.getStart(), member.getEnd(), FIX_FLAGS.OBJECT_BINDING | FIX_FLAGS.WITH_NEWLINE] as Fix)
     : undefined,
 });
+
+const mapMember = (member: ts.PropertyAssignment): ExportNodeMember => ({
+  node: member,
+  identifier: stripQuotes(member.name.getText()),
+  pos: member.name!.getStart(),
+  type: SymbolType.STYLE,
+  fix: ([member.getStart(), member.getEnd(), FIX_FLAGS.OBJECT_BINDING | FIX_FLAGS.WITH_NEWLINE] as Fix),
+});
+export const getStyleArgs = (styleArg: ts.Node, typeChecker?: ts.TypeChecker): any => {
+  // console.log('getStyleArgs', styleArg.kind, '\n\n\n');
+  if (ts.isPropertyAssignment(styleArg)) {
+    return mapMember(styleArg);
+  }
+  if (ts.isObjectLiteralExpression(styleArg)) {
+    return styleArg.properties.map(prop => getStyleArgs(prop, typeChecker));
+  }
+  if (ts.isArrowFunction(styleArg)) {
+    if (ts.isParenthesizedExpression(styleArg.body)) {
+      if(styleArg.body.expression && ts.isObjectLiteralExpression(styleArg.body.expression)) {
+        return styleArg.body.expression.properties.map(prop => getStyleArgs(prop, typeChecker));
+      }
+    }
+    if (ts.isBlock(styleArg.body)) {
+      const blockReturn = styleArg.body.statements.findLast(ts.isReturnStatement);
+      if (blockReturn?.expression && ts.isObjectLiteralExpression(blockReturn.expression)) {
+        return blockReturn.expression.properties.map(prop => getStyleArgs(prop, typeChecker));
+      }
+    }
+  }
+  if (ts.isCallExpression(styleArg)) {
+    const callArgs = styleArg.arguments[0];
+    // TOO MANY COLLISIONS
+    if (ts.isIdentifier(callArgs)) {
+      // const symImport = typeChecker?.getSymbolAtLocation(styleArg.expression);
+      // const symImportDeclarations = symImport?.getDeclarations();
+      // if (symImportDeclarations && ts.isImportSpecifier(symImportDeclarations[0])) {
+      //   const symImportName = typeChecker?.getSymbolAtLocation(symImportDeclarations[0].name);
+      //   if (symImportName) {
+      //     const symExport = typeChecker?.getAliasedSymbol(symImportName);
+      //     const symExportFun = symExport?.getDeclarations()![0];
+      //     const symBody = (symExportFun as VariableDeclaration)?.initializer;
+      //     if (symBody) return getStyleArgs(symBody, typeChecker);
+      //   }
+      // }
+    } else {
+      return getStyleArgs(callArgs, typeChecker);
+    }
+  }
+  if (ts.isSpreadAssignment(styleArg) && typeChecker) {
+    const sym = typeChecker.getSymbolAtLocation(styleArg.expression);
+    if (sym && sym.valueDeclaration && ts.isVariableDeclaration(sym.valueDeclaration) && sym.valueDeclaration.initializer) {
+      return getStyleArgs(sym.valueDeclaration.initializer, typeChecker);
+    }
+  }
+  if (ts.isIdentifier(styleArg)) {
+    // console.log('isIdentifier', styleArg, '\n\n\n');
+  }
+
+  // console.log('Skipped nodes:', styleArg.kind, '\n\n\n');
+  return [];
+}
 
 export function stripQuotes(name: string) {
   const length = name.length;

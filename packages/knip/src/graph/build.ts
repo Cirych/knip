@@ -91,7 +91,7 @@ export async function build({
 
   const getReferencedInternalFilePath = getReferencedInputsHandler(collector, deputy, chief, isGitIgnored);
 
-  const isReportClassMembers = report.classMembers;
+  const isReportClassMembers = report.classMembers || report.styleMembers;
 
   for (const workspace of workspaces) {
     const { name, dir, manifestPath, manifestStr } = workspace;

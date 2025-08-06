@@ -51,6 +51,7 @@ export type GetImportsAndExportsOptions = {
   isReportClassMembers: boolean;
   ignoreExportsUsedInFile: IgnoreExportsUsedInFile;
   tags: Tags;
+  typeChecker?: ts.TypeChecker;
 };
 
 export interface Configuration {
