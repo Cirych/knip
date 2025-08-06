@@ -7,7 +7,7 @@ import type { PrincipalFactory } from '../PrincipalFactory.js';
 import type { Tags } from '../types/cli.js';
 import type { Report } from '../types/issues.js';
 import type { Export, ExportMember, ModuleGraph } from '../types/module-graph.js';
-import { getType, hasStrictlyEnumReferences, hasStrictlyNsReferences } from '../util/has-strictly-ns-references.js';
+import { getType, hasStrictlyEnumReferences, hasStrictlyStyleReferences, hasStrictlyNsReferences } from '../util/has-strictly-ns-references.js';
 import { getIsIdentifierReferencedHandler } from '../util/is-identifier-referenced.js';
 import { getPackageNameFromModuleSpecifier } from '../util/modules.js';
 import { findMatch } from '../util/regex.js';
@@ -52,9 +52,9 @@ export const analyze = async (options: AnalyzeOptions) => {
   } = options;
 
   const isReportDependencies = report.dependencies || report.unlisted || report.unresolved || report.binaries;
-  const isReportValues = report.exports || report.nsExports || report.classMembers;
-  const isReportTypes = report.types || report.nsTypes || report.enumMembers;
-  const isReportClassMembers = report.classMembers;
+  const isReportValues = report.exports || report.nsExports || report.classMembers || report.styleMembers;
+  const isReportTypes = report.types || report.nsTypes || report.enumMembers || report.styleMembers;
+  const isReportClassMembers = report.classMembers || report.styleMembers;
   const isSkipLibs = !(isIncludeLibs || isReportClassMembers);
 
   const shouldIgnore = getShouldIgnoreHandler(isProduction);
@@ -188,6 +188,23 @@ export const analyze = async (options: AnalyzeOptions) => {
 
                     const isIssueAdded = collector.addIssue({
                       type: 'classMembers',
+                      filePath,
+                      workspace: workspace.name,
+                      symbol: member.identifier,
+                      parentSymbol: exportedItem.identifier,
+                      pos: member.pos,
+                      line: member.line,
+                      col: member.col,
+                    });
+
+                    if (isFix && isIssueAdded && member.fix) fixer.addUnusedTypeNode(filePath, [member.fix]);
+                  }
+                }
+
+                if (principal && report.styleMembers && exportedItem.type === 'style') {
+                  for (const member of principal.findUnusedMembers(filePath, exportedItem.members)) {
+                    const isIssueAdded = collector.addIssue({
+                      type: 'styleMembers',
                       filePath,
                       workspace: workspace.name,
                       symbol: member.identifier,

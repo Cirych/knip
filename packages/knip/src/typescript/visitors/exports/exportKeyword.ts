@@ -1,10 +1,11 @@
 import ts from 'typescript';
 import { FIX_FLAGS } from '../../../constants.js';
-import type { Fix } from '../../../types/exports.js';
+import type { ExportNodeMember, Fix } from '../../../types/exports.js';
 import { SymbolType } from '../../../types/issues.js';
 import { compact } from '../../../util/array.js';
 import {
   getClassMember,
+  getStyleArgs,
   getDefaultKeywordNode,
   getEnumMember,
   getExportKeywordNode,
@@ -13,7 +14,7 @@ import {
 import { isModule } from '../helpers.js';
 import { exportVisitor as visit } from '../index.js';
 
-export default visit(isModule, (node, { isFixExports, isFixTypes, isReportClassMembers }) => {
+export default visit(isModule, (node, { isFixExports, isFixTypes, isReportClassMembers, typeChecker }) => {
   const exportKeyword = getExportKeywordNode(node);
 
   if (exportKeyword) {
@@ -65,6 +66,27 @@ export default visit(isModule, (node, { isFixExports, isFixTypes, isReportClassM
           );
         }
 
+        if (declaration.initializer && ts.isCallExpression(declaration.initializer as any)) {
+          const callExpression = declaration.initializer as ts.CallExpression;
+          if (ts.isIdentifier(callExpression.expression) && callExpression.expression.text === 'createStyleSheet') {
+            const styleArg = callExpression.arguments[0];
+            
+            if(styleArg) {
+              const members = getStyleArgs(styleArg, typeChecker).flat(Infinity) as ExportNodeMember[];
+              if (members.length) {
+                return {
+                  node: declaration,
+                  identifier: declaration.name.getText(),
+                  type: SymbolType.STYLE,
+                  pos: declaration.name.getStart(),
+                  fix: getFix(exportKeyword),
+                  members: members
+                };
+              }
+            }
+          }
+        }
+        
         // Pattern: export const MyVar = 1;
         const identifier = declaration.name.getText();
         const pos = declaration.name.getStart();

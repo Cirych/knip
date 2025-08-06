@@ -35,7 +35,8 @@
       "nsTypes": "warn",
       "duplicates": "warn",
       "enumMembers": "warn",
-      "classMembers": "warn"
+      "classMembers": "warn",
+      "styleMembers": "warn"
     }
   }
 }

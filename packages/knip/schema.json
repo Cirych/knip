@@ -131,6 +131,9 @@
         "classMembers": {
           "$ref": "#/definitions/ruleValue"
         },
+        "styleMembers": {
+          "$ref": "#/definitions/ruleValue"
+        },
         "dependencies": {
           "$ref": "#/definitions/ruleValue"
         },
@@ -189,6 +192,7 @@
         "enum": [
           "binaries",
           "classMembers",
+          "styleMembers",
           "dependencies",
           "duplicates",
           "enumMembers",

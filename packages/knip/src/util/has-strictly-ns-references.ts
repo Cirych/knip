@@ -7,6 +7,12 @@ export const hasStrictlyEnumReferences = (importsForExport: ImportDetails | unde
   return true;
 };
 
+export const hasStrictlyStyleReferences = (importsForExport: ImportDetails | undefined, id: string) => {
+  if (!importsForExport || !importsForExport.refs.has(id)) return false;
+  for (const ref of importsForExport.refs) if (ref.startsWith(`${id}.`)) return false;
+  return true;
+};
+
 export const hasStrictlyNsReferences = (
   graph: ModuleGraph,
   importsForExport: ImportDetails | undefined,

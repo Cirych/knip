@@ -252,7 +252,7 @@ export class ProjectPrincipal {
 
     const resolve = (specifier: string) => this.backend.resolveModuleNames([specifier], sourceFile.fileName)[0];
 
-    return _getImportsAndExports(sourceFile, resolve, typeChecker, { ...options, skipExports });
+    return _getImportsAndExports(sourceFile, resolve, typeChecker, { ...options, skipExports, typeChecker });
   }
 
   invalidateFile(filePath: string) {

@@ -46,7 +46,7 @@ export const getIncludedIssueTypes = (
     incl = [...incl, 'dependencies', 'optionalPeerDependencies', 'unlisted', 'binaries', 'unresolved'];
   }
   if (cliArgs.isExportsShorthand) {
-    incl = [...incl, 'exports', 'types', 'enumMembers', 'duplicates'];
+    incl = [...incl, 'exports', 'types', 'enumMembers', 'styleMembers', 'duplicates'];
   }
   if (cliArgs.isFilesShorthand) {
     incl = [...incl, 'files'];
